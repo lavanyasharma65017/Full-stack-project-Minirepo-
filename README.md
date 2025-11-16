@@ -113,9 +113,5 @@ curl -X POST http://localhost:3000/api/competitions/<id>/register \
 📁 Mailbox Simulation
 View simulated emails in the MailBox table via frontend or DB.
 
-📚 License
-MIT — feel free to fork and build on it!
 
-Let me know if you’d like a badge section, GitHub Actions CI setup, or deployment notes added!
 
-Full-stack-project(Minirepo)
