@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PARTICIPANT
+  ORGANIZER
+}
+
+model User {
+  id          String         @id @default(uuid())
+  email       String         @unique
+  name        String
+  passwordHash String
+  role        Role
+  
+  registrations Registration[]
+  competitions  Competition[]
+  mailboxes     MailBox[]
+}
+
+model Competition {
+  id              String         @id @default(uuid())
+  title           String
+  description     String
+  tags            String[]
+  capacity        Int
+  seatsLeft       Int // Denormalized count
+  regDeadline     DateTime
+  startTime       DateTime // Added for Cron reminders
+  
+  organizerId     String
+  organizer       User           @relation(fields: [organizerId], references: [id])
+  
+  registrations   Registration[]
+  
+  @@index([organizerId])
+  @@index([startTime])
+}
+
+model Registration {
+  id               String      @id @default(uuid())
+  competitionId    String
+  competition      Competition @relation(fields: [competitionId], references: [id])
+  
+  userId           String
+  user             User        @relation(fields: [userId], references: [id])
+  
+  registeredAt     DateTime    @default(now())
+  isConfirmed      Boolean     @default(false)
+  
+  // Idempotency key must be unique across all registrations
+  idempotencyKey   String      @unique
+  
+  @@unique([competitionId, userId])
+}
+
+model MailBox {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  subject     String
+  body        String
+  sentAt      DateTime @default(now())
+  
+  @@index([userId])
+}
